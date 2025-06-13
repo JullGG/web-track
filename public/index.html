@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>IP Tracker Generator</title>
+  <style>
+    body { font-family: sans-serif; text-align: center; margin-top: 50px; }
+    input, button { padding: 10px; font-size: 16px; width: 300px; }
+    #result { margin-top: 20px; font-size: 16px; }
+  </style>
+</head>
+<body>
+  <h2>🎯 IP Tracker Generator</h2>
+  <input type="text" id="linkInput" placeholder="Masukkan link tujuan (contoh: https://google.com)">
+  <br><br>
+  <button onclick="generate()">Generate Link Pelacak</button>
+  <div id="result"></div>
+
+  <script>
+    async function generate() {
+      const url = document.getElementById('linkInput').value;
+      const res = await fetch('/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ url })
+      });
+
+      const data = await res.json();
+      const id = data.trackUrl.split('/').pop();
+
+      document.getElementById('result').innerHTML = `
+        ✅ Link pelacak kamu:<br>
+        <a href="${data.trackUrl}" target="_blank">${data.trackUrl}</a><br><br>
+        🔍 Lihat log klik:<br>
+        <a href="/logs/${id}" target="_blank">/logs/${id}</a>
+      `;
+    }
+  </script>
+</body>
+</html>
