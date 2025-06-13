@@ -4,21 +4,25 @@
   <meta charset="UTF-8">
   <title>IP Tracker Generator</title>
   <style>
-    body { font-family: sans-serif; text-align: center; margin-top: 50px; }
+    body { font-family: sans-serif; text-align: center; padding: 40px; }
     input, button { padding: 10px; font-size: 16px; width: 300px; }
-    #result { margin-top: 20px; font-size: 16px; }
+    #result { margin-top: 30px; font-size: 16px; }
+    .box { border: 1px solid #ccc; padding: 15px; margin-top: 20px; border-radius: 10px; }
   </style>
 </head>
 <body>
   <h2>🎯 IP Tracker Generator</h2>
   <input type="text" id="linkInput" placeholder="Masukkan link tujuan (contoh: https://google.com)">
   <br><br>
-  <button onclick="generate()">Generate Link Pelacak</button>
+  <button onclick="generate()">🎁 Buat Link Pelacak</button>
+
   <div id="result"></div>
 
   <script>
     async function generate() {
       const url = document.getElementById('linkInput').value;
+      if (!url) return alert("Masukkan link dulu bro");
+
       const res = await fetch('/generate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -29,11 +33,37 @@
       const id = data.trackUrl.split('/').pop();
 
       document.getElementById('result').innerHTML = `
-        ✅ Link pelacak kamu:<br>
-        <a href="${data.trackUrl}" target="_blank">${data.trackUrl}</a><br><br>
-        🔍 Lihat log klik:<br>
-        <a href="/logs/${id}" target="_blank">/logs/${id}</a>
+        <div class="box">
+          ✅ <b>Link pelacak kamu:</b><br>
+          <a href="${data.trackUrl}" target="_blank">${data.trackUrl}</a><br><br>
+
+          🔍 <b>Link lihat log:</b><br>
+          <a href="/logs/${id}" target="_blank">/logs/${id}</a><br><br>
+
+          ⏳ Menunggu klik...<br>
+          <button onclick="loadLog('${id}')">🔄 Cek Data Klik</button>
+
+          <div id="logData"></div>
+        </div>
       `;
+    }
+
+    async function loadLog(id) {
+      const res = await fetch(`/logs/${id}`);
+      const html = await res.text();
+
+      const parser = new DOMParser();
+      const doc = parser.parseFromString(html, 'text/html');
+
+      const log = doc.body.querySelector('div');
+      if (!log) {
+        document.getElementById('logData').innerHTML = '<br><i>Belum ada klik.</i>';
+      } else {
+        document.getElementById('logData').innerHTML = `
+          <hr><h4>📍 Hasil Tracking Terbaru:</h4>
+          ${log.innerHTML}
+        `;
+      }
     }
   </script>
 </body>
