@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Animated Tracking Link Generator</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&display=swap');
+  @import url('https://fonts.googleapis.com/icon?family=Material+Icons');
+
+  /* Reset and base */
+  *, *::before, *::after {
+    box-sizing: border-box;
+  }
+  body {
+    margin: 0;
+    font-family: 'Poppins', sans-serif;
+    background: linear-gradient(135deg, #2a2a72, #009ffd, #2a2a72);
+    background-size: 400% 400%;
+    animation: bgGradient 15s ease infinite;
+    min-height: 100vh;
+    color: #f0f0f3;
+    display: flex;
+    flex-direction: column;
+  }
+  @keyframes bgGradient {
+    0%{background-position:0% 50%}
+    50%{background-position:100% 50%}
+    100%{background-position:0% 50%}
+  }
+
+  /* Container for everything */
+  .app-container {
+    flex: 1 1 auto;
+    display: grid;
+    grid-template-columns: 1fr;
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 24px 16px 48px;
+    gap: 32px;
+  }
+
+  /* Responsive grid columns for desktop and large desktop */
+  @media (min-width: 1024px) {
+    .app-container {
+      grid-template-columns: 1fr 1fr 1fr;
+      padding: 48px 64px 64px;
+      gap: 48px;
+    }
+  }
+  @media (min-width: 1440px) {
+    .app-container {
+      max-width: 1280px;
+      padding: 64px 96px 64px;
+    }
+  }
+
+  /* Header */
+  header {
+    background: rgba(0,0,0,0.3);
+    backdrop-filter: blur(10px);
+    padding: 16px 32px;
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .logo {
+    font-weight: 800;
+    font-size: 1.8rem;
+    background: linear-gradient(135deg, #00ffc8 10%, #0077ff 90%);
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    user-select: none;
+  }
+  nav.desktop-nav {
+    display: none;
+  }
+  /* Hamburger menu for mobile */
+  .mobile-menu-button {
+    background: none;
+    border: none;
+    color: #00ffc8;
+    font-size: 36px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+  }
+  /* Mobile nav overlay */
+  nav.mobile-nav {
+    position: fixed;
+    top: 0;
+    left: 100%;
+    width: 80%;
+    height: 100vh;
+    background: rgba(10, 42, 70, 0.95);
+    backdrop-filter: blur(12px);
+    transition: left 0.3s ease;
+    padding: 90px 24px 32px;
+    display: flex;
+    flex-direction: column;
+    gap: 28px;
+    z-index: 1100;
+  }
+  nav.mobile-nav.show {
+    left: 20%;
+  }
+  nav.mobile-nav a {
+    font-size: 1.4rem;
+    color: #00ffc8;
+    font-weight: 600;
+    text-decoration: none;
+    user-select: none;
+    transition: color 0.3s ease;
+  }
+  nav.mobile-nav a:hover,
+  nav.mobile-nav a:focus {
+    color: #0077ff;
+    outline: none;
+  }
+
+  /* Desktop nav */
+  @media (min-width: 768px) {
+    .mobile-menu-button { display: none; }
+    nav.desktop-nav {
+      display: flex;
+      gap: 32px;
+    }
+    nav.desktop-nav a {
+      color: #00ffc8;
+      font-weight: 600;
+      font-size: 1rem;
+      text-decoration: none;
+      user-select: none;
+      position: relative;
+      padding-bottom: 4px;
+      cursor: pointer;
+      transition: color 0.3s ease;
+    }
+    nav.desktop-nav a::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 0%;
+      height: 2px;
+      background-image: linear-gradient(135deg, #00ffc8, #0077ff);
+      transition: width 0.3s ease;
+      border-radius: 2px;
+    }
+    nav.desktop-nav a:hover,
+    nav.desktop-nav a:focus {
+      color: #0077ff;
+      outline: none;
+    }
+    nav.desktop-nav a:hover::after,
+    nav.desktop-nav a:focus::after {
+      width: 100%;
+    }
+  }
+
+  /* Main content cards */
+
+  /* Card common */
+  .card {
+    background: rgba(0,0,0,0.3);
+    border-radius: 16px;
+    box-shadow:
+      0 2px 8px rgba(0,255,255,0.1),
+      0 6px 16px rgba(0,125,255,0.2);
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.35s cubic-bezier(0.4,0,0.2,1);
+  }
+  .card:hover {
+    transform: translateY(-10px);
+    box-shadow:
+      0 8px 16px rgba(0,255,255,0.3),
+      0 14px 28px rgba(0,125,255,0.5);
+  }
+
+  /* Animated gradient border */
+  .card::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: 16px;
+    padding: 2px;
+    background: linear-gradient(270deg, #00ffc8, #0077ff, #00ffc8, #0077ff);
+    background-size: 400% 400%;
+    animation: borderShift 8s linear infinite;
+    -webkit-mask:
+      linear-gradient(#fff 0 0) content-box, 
+      linear-gradient(#fff 0 0);
+    -webkit-mask-composite: destination-out;
+    mask-composite: exclude;
+    pointer-events: none;
+  }
+  @keyframes borderShift {
+    0% {background-position:0% 50%;}
+    100% {background-position:400% 50%;}
+  }
+
+  h2 {
+    margin: 0;
+    font-size: 1.8rem;
+    font-weight: 700;
+    background: linear-gradient(90deg, #00ffc8, #0077ff);
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    user-select: none;
+  }
+
+  /* Form styling */
+  form {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+  input[type="url"],
+  input[type="text"] {
+    padding: 12px 16px;
+    border-radius: 12px;
+    border: none;
+    background: rgba(255,255,255,0.1);
+    color: #e0f7fa;
+    font-size: 1.1rem;
+    outline-offset: 2px;
+    transition: background 0.3s ease;
+  }
+  input[type="url"]:focus,
+  input[type="text"]:focus {
+    background: rgba(255,255,255,0.25);
+    outline: 3px solid #00ffc8;
+    outline-offset: 2px;
+  }
+
+  button {
+    font-family: 'Poppins', sans-serif;
+    font-weight: 600;
+    font-size: 1.2rem;
+    cursor: pointer;
+    border-radius: 14px;
+    border: none;
+    padding: 14px 0;
+    color: #011627;
+    background: linear-gradient(135deg, #00ffc8, #0077ff);
+    box-shadow:
+      0 4px 12px rgba(0,255,255,0.5);
+    transition: background 0.3s ease, transform 0.25s ease;
+    user-select: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+  }
+  button:disabled {
+    cursor: not-allowed;
+    filter: grayscale(0.7) brightness(0.7);
+  }
+  button:hover:not(:disabled) {
+    background: linear-gradient(135deg, #0083ff, #002aff);
+    transform: translateY(-3px);
+    box-shadow:
+      0 6px 18px rgba(0, 150, 255, 0.7);
+  }
+  button:focus-visible {
+    outline: 3px solid #00ffc8;
+    outline-offset: 2px;
+  }
+
+  /* Result text area */
+  textarea {
+    width: 100%;
+    border-radius: 12px;
+    border: none;
+    padding: 12px 16px;
+    font-size: 1.05rem;
+    font-family: 'Poppins', sans-serif;
+    background: rgba(255,255,255,0.1);
+    color: #e0f7fa;
+    resize: vertical;
+    min-height: 80px;
+    outline-offset: 2px;
+    transition: background 0.3s ease;
+  }
+  textarea:focus {
+    background: rgba(255,255,255,0.25);
+    outline: 3px solid #00ffc8;
+  }
+
+  /* Location info display styles */
+  .location-info {
+    background: rgba(0,0,0,0.4);
+    padding: 16px 20px;
+    border-radius: 14px;
+    font-size: 1rem;
+    color: #b0f0FF;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+  .location-info div strong {
+    color: #00ffc8;
+  }
+
+  /* Animations for location info */
+  .fade-in {
+    animation: fadeInUp 0.8s ease forwards;
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  @keyframes fadeInUp {
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  /* Footer */
+  footer {
+    background: rgba(0,0,0,0.35);
+    text-align: center;
+    padding: 24px 16px;
+    color: #00ffc8;
+    user-select: none;
+    font-weight: 500;
+    font-size: 0.9rem;
+    letter-spacing: 1.5px;
+  }
+
+  /* Icon styles with material icons */
+  .material-icons {
+    vertical-align: middle;
+    font-size: 20px;
+    color: #00ffc8;
+  }
+
+</style>
+</head>
+<body>
+<header>
+  <div class="logo" aria-label="Tracking Link Generator Logo" role="banner">Trackly</div>
+  <button class="mobile-menu-button" aria-label="Open navigation menu" aria-expanded="false" aria-controls="mobile-menu">&#xe5d2;</button>
+  <nav class="mobile-nav" id="mobile-menu" aria-hidden="true" role="navigation" tabindex="-1">
+    <a href="#create" tabindex="-1">Create Link</a>
+    <a href="#info" tabindex="-1">About</a>
+  </nav>
+  <nav class="desktop-nav" role="navigation">
+    <a href="#create">Create Link</a>
+    <a href="#info">About</a>
+  </nav>
+</header>
+
+<main class="app-container" role="main">
+
+  <section id="create" class="card" tabindex="0" aria-label="Create Tracking Link Section">
+    <h2>Create Your Tracking Link</h2>
+    <form id="linkForm">
+      <label for="targetUrl">Enter target URL to track visitors:</label>
+      <input 
+        id="targetUrl" 
+        type="url" 
+        name="targetUrl" 
+        placeholder="https://example.com" 
+        required 
+        aria-required="true"
+        autocomplete="off" 
+        pattern="https?://.*"
+        title="Please enter a valid URL starting with http:// or https://"
+      />
+      <button type="submit" aria-label="Generate tracking link with location capture">
+        <span class="material-icons" aria-hidden="true">link</span> Generate Link
+      </button>
+    </form>
+    <textarea id="resultLink" readonly aria-live="polite" aria-label="Generated tracking link"></textarea>
+  </section>
+
+  <section id="info" class="card fade-in" tabindex="0" aria-label="Visitor Location Information Section">
+    <h2>Visitor Location Info</h2>
+    <p>This page captures your approximate location using your IP address when opening the tracking link.</p>
+    <div id="locationDisplay" class="location-info" aria-live="polite">
+      <div><strong>Loading visitor location info...</strong></div>
+    </div>
+  </section>
+
+  <section class="card fade-in" tabindex="0" aria-label="How It Works Section">
+    <h2>How It Works</h2>
+    <p>1. Enter a valid URL above and create a special tracking link.</p>
+    <p>2. Share the generated link with your audience.</p>
+    <p>3. When someone opens the generated tracking link, their approximate location (city, country, IP) is fetched.</p>
+    <p>4. This page shows the current visitor's info for demo purposes.</p>
+    <p><em>Note:</em> The site does not store visitor location data. This demo simulates capturing location on link open.</p>
+  </section>
+</main>
+
+<footer role="contentinfo">
+  &copy; 2024 Trackly • Built with modern web standards & animations
+</footer>
+
+<script>
+  (() => {
+    const mobileBtn = document.querySelector('.mobile-menu-button');
+    const mobileNav = document.querySelector('nav.mobile-nav');
+
+    // Toggle mobile menu accessibility
+    mobileBtn.addEventListener('click', () => {
+      const expanded = mobileBtn.getAttribute('aria-expanded') === 'true';
+      mobileBtn.setAttribute('aria-expanded', !expanded);
+      if (!expanded) {
+        mobileNav.classList.add('show');
+        mobileNav.setAttribute('aria-hidden', 'false');
+        mobileNav.querySelectorAll('a').forEach(el => el.tabIndex = 0);
+        mobileNav.focus();
+      } else {
+        mobileNav.classList.remove('show');
+        mobileNav.setAttribute('aria-hidden', 'true');
+        mobileNav.querySelectorAll('a').forEach(el => el.tabIndex = -1);
+      }
+    });
+
+    // Close mobile nav when a link is clicked
+    mobileNav.querySelectorAll('a').forEach(link => {
+      link.addEventListener('click', () => {
+        mobileBtn.setAttribute('aria-expanded', false);
+        mobileNav.classList.remove('show');
+        mobileNav.setAttribute('aria-hidden', 'true');
+        mobileNav.querySelectorAll('a').forEach(el => el.tabIndex = -1);
+      });
+    });
+
+    // Generate tracking link logic
+    const linkForm = document.getElementById('linkForm');
+    const resultLink = document.getElementById('resultLink');
+    const currentUrl = new URL(window.location.href);
+
+    // Helper to generate random ID
+    function generateId(length=8) {
+      const chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+      let result = '';
+      for(let i=0; i < length; i++) {
+        result += chars.charAt(Math.floor(Math.random() * chars.length));
+      }
+      return result;
+    }
+
+    linkForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const urlValue = linkForm.targetUrl.value.trim();
+      if (!urlValue) return;
+      try {
+        new URL(urlValue);
+      } catch {
+        resultLink.value = 'Error: Invalid URL';
+        return;
+      }
+
+      // Generate unique ID
+      const uniqueId = generateId();
+
+      // Create tracking link - reuse this same page with query param for demo
+      // Format: currentPage?track=<id>&target=<encodedUrl>
+      // Encode the target URL to safely include it in query string
+      const encodedTarget = encodeURIComponent(urlValue);
+      const trackingUrl = `${currentUrl.origin}${currentUrl.pathname}?track=${uniqueId}&target=${encodedTarget}`;
+
+      resultLink.value = trackingUrl;
+
+      // Focus to textarea and select for easy copy
+      resultLink.focus();
+      resultLink.select();
+    });
+
+    // On load, check if URL has a tracking ID param
+    const params = new URLSearchParams(window.location.search);
+    const trackingId = params.get('track');
+    const targetUrl = params.get('target');
+
+    const locationDisplay = document.getElementById('locationDisplay');
+
+    // Function to fetch visitor location info via ipgeolocation API
+    // Using free IP API for demo: https://ipapi.co/json/
+    // Note: We fetch only on tracking link page (with ?track param)
+    if (trackingId && targetUrl) {
+      // Hide form and info how it works (optional)
+      document.getElementById('create').style.display = 'none';
+
+      // Update header to show redirect info
+      const infoSection = document.getElementById('info');
+      infoSection.querySelector('p').textContent = 'Fetching your location...';
+
+      // Replace the locationDisplay with spinner animation while fetching
+      locationDisplay.innerHTML = `
+        <div style="display:flex; justify-content:center; align-items:center;">
+          <svg style="width:48px; height:48px; color:#00ffc8;" class="spinner" viewBox="0 0 50 50" aria-hidden="true">
+            <circle class="path" cx="25" cy="25" r="20" fill="none" stroke-width="4"></circle>
+          </svg>
+          <span style="margin-left:12px;">Loading...</span>
+        </div>
+      `;
+
+      // Spinner animation CSS injected here
+      const style = document.createElement('style');
+      style.textContent = `
+        .spinner {
+          animation: rotate 2s linear infinite;
+        }
+        .path {
+          stroke: #00ffc8;
+          stroke-linecap: round;
+          animation: dash 1.5s ease-in-out infinite;
+        }
+        @keyframes rotate {
+          100% {
+            transform: rotate(360deg);
+          }
+        }
+        @keyframes dash {
+          0% {
+            stroke-dasharray: 1,150;
+            stroke-dashoffset: 0;
+          }
+          50% {
+            stroke-dasharray: 90,150;
+            stroke-dashoffset: -35;
+          }
+          100% {
+            stroke-dasharray: 90,150;
+            stroke-dashoffset: -124;
+          }
+        }
+      `;
+      document.head.appendChild(style);
+
+      // Fetch location info asynchronously
+      fetch('https://ipapi.co/json/')
+        .then(res => {
+          if (!res.ok) throw new Error('Failed to fetch location data');
+          return res.json();
+        })
+        .then(data => {
+          // Display info with fade-in
+          locationDisplay.innerHTML = `
+            <div><strong>Tracking ID:</strong> ${trackingId}</div>
+            <div><strong>IP Address:</strong> ${data.ip || 'N/A'}</div>
+            <div><strong>City:</strong> ${data.city || 'N/A'}</div>
+            <div><strong>Region:</strong> ${data.region || 'N/A'}</div>
+            <div><strong>Country:</strong> ${data.country_name || 'N/A'}</div>
+            <div><strong>Latitude:</strong> ${data.latitude || 'N/A'}</div>
+            <div><strong>Longitude:</strong> ${data.longitude || 'N/A'}</div>
+            <div><strong>Timezone:</strong> ${data.timezone || 'N/A'}</div>
+            <div><strong>ISP:</strong> ${data.org || 'N/A'}</div>
+            <div><strong>Target URL:</strong> <a href="${decodeURIComponent(targetUrl)}" target="_blank" rel="noopener noreferrer" style="color:#00ffc8; text-decoration:underline;">${decodeURIComponent(targetUrl)}</a></div>
+            <p style="margin-top: 12px; font-style: italic; color: #c0f7ff;">Redirecting you to target URL in 5 seconds...</p>
+          `;
+          locationDisplay.classList.add('fade-in');
+          // Redirect after 5 seconds
+          setTimeout(() => {
+            window.location.href = decodeURIComponent(targetUrl);
+          }, 5000);
+        })
+        .catch(() => {
+          locationDisplay.innerHTML =
+            '<div><strong>Failed to retrieve location data.</strong></div>';
+        });
+    }
+  })();
+</script>
+</body>
+</html>
+
